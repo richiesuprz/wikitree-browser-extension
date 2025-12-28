@@ -20,6 +20,9 @@ dist
 # WinMerge backups
 *.bak
 
+# local plans/notes (not tracked)
+plans/
+
 # generated during build process
 public/features/wtPlus/templatesExp.json
 

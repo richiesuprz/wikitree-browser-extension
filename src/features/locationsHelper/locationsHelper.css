@@ -27,3 +27,8 @@ input[name="mMarriageLocation"] {
   padding: 1px 6px; /* vertical | horizontal padding */
   margin-bottom: 0px;
 }
+
+.wbe-location-gear {
+  position: absolute !important;
+  left: -2.5rem;
+}

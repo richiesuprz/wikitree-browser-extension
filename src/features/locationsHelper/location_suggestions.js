@@ -48,6 +48,39 @@ let forceUpdate = false;
 
 let select2Selections;
 
+// Local helpers mirror sanitizers in locationsHelper.js
+function stripLocationDates(raw) {
+  if (!raw) return "";
+  let s = raw;
+  const dateParenRegex = /\s*\((?:[^)]*\d{3,4}[^)]*)\)\s*$/;
+  let changed = false;
+  while (dateParenRegex.test(s)) {
+    s = s.replace(dateParenRegex, "");
+    changed = true;
+  }
+  if (changed) {
+    s = s
+      .replace(/\s{2,}/g, " ")
+      .trim()
+      .replace(/,\s*,/g, ", ")
+      .replace(/,\s*$/g, "");
+  }
+  return s.trim();
+}
+
+function stripAliasAnnotations(raw) {
+  if (!raw) return "";
+  let s = raw;
+  s = s.replace(/\baka\b.*$/i, "");
+  s = s.replace(/\s*\[[^\]]*\]\s*$/, "");
+  s = s
+    .replace(/\s{2,}/g, " ")
+    .trim()
+    .replace(/,\s*,/g, ", ")
+    .replace(/,\s*$/g, "");
+  return s.trim();
+}
+
 export async function initLocationSuggestions(suggestionOption) {
   if (suggestionOption === "no") return;
 
@@ -134,7 +167,7 @@ function insertCountrySelectAbove(inputfield, sid) {
         <div class="input-group">
           <span class="input-group-text" title="Select the countries to which to limit searches for place name suggestions">Country</span>
           <select id="${sid}" class="form-select wbe-country-select" multiple="multiple"></select>
-          <button class="btn btn-outline-secondary wbe-location-gear" type="button" title="Location Data Management">
+          <button id="${sid}_gear" class="btn btn-outline-secondary wbe-location-gear" type="button" title="Location Data Management">
             <img src="${gearSrc}">
           </button>
         </div>
@@ -361,7 +394,8 @@ export function formSuggestionElement(item, userInput) {
   // </div>
   const suggestion = document.createElement("div");
   suggestion.className = "autocomplete-suggestion";
-  suggestion.dataset.val = item.p;
+  // Ensure data-val is clean (no dates/aka/annotations)
+  suggestion.dataset.val = stripAliasAnnotations(stripLocationDates(item.p || ""));
 
   const img = document.createElement("img");
   img.src = "/images/icons/map.gif";
@@ -430,7 +464,7 @@ async function getWBELocSuggestions(userInput, date, countries) {
     label: `${item.p} (${item.s == "0001-01-01" ? " " : item.s}–${item.e == "9999-12-31" ? " " : item.e}) aka ${
       item.o
     }`,
-    value: item.p,
+    value: stripAliasAnnotations(stripLocationDates(item.p || "")),
   }));
 }
 
